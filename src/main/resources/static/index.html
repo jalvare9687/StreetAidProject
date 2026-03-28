@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HarvestPath — Community Resource Finder</title>
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<div class="kiosk" role="main" aria-label="HarvestPath Community Resource Finder">
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="hlogo">
+      <div class="hmark" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M14 2C9.6 2 6 5.6 6 10c0 6.4 8 16 8 16s8-9.6 8-16c0-4.4-3.6-8-8-8z" fill="white"/>
+          <circle cx="14" cy="10" r="3" fill="#1D9E75"/>
+        </svg>
+      </div>
+      <div>
+        <div class="htitle">HarvestPath</div>
+        <div class="hsub">Atlanta Community Resource Finder &nbsp;·&nbsp; Enter your ZIP to get started</div>
+      </div>
+    </div>
+    <div class="hright">
+      <div class="htime" id="clock" aria-live="polite">--:-- --</div>
+      <div class="hdate" id="hdate"></div>
+    </div>
+  </div>
+
+  <!-- ── SEARCH ─────────────────────────────────────────────── -->
+  <div class="search-section" role="search">
+    <div class="search-label">
+      <span style="font-size:22px">📍</span>
+      Where are you? Enter your ZIP code
+    </div>
+    <div class="search-row">
+      <div class="search-wrap" id="searchWrap">
+        <span class="s-ico" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="10" cy="10" r="7" stroke="rgba(255,255,255,0.55)" stroke-width="2.5"/>
+            <path d="M15.5 15.5L22 22" stroke="rgba(255,255,255,0.55)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input
+          class="search-input" id="searchInput"
+          type="text" maxlength="5" inputmode="numeric"
+          placeholder="e.g.  30314,  30310,  30303…"
+          aria-label="Enter your ZIP code"
+          autocomplete="off"
+          oninput="onZipInput()"
+          onkeydown="onZipKey(event)"
+        />
+        <div class="suggestions" id="suggestions" role="listbox"></div>
+      </div>
+      <button class="search-btn" onclick="doLookup()" aria-label="Search for resources">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="10" cy="10" r="7" stroke="white" stroke-width="2.5"/>
+          <path d="M15.5 15.5L22 22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Find Resources
+      </button>
+      <button class="clear-btn" onclick="clearAll()" aria-label="Clear search">✕ Clear</button>
+    </div>
+  </div>
+
+  <!-- ── ENV STRIP (AQI + Water + Food Desert) ──────────────── -->
+  <div class="env-strip" id="envStrip" style="display:none" aria-live="polite">
+    <div class="env-card" id="envAqi">
+      <div class="env-icon">🌬</div>
+      <div class="env-info">
+        <div class="env-label">Air Quality (AQI)</div>
+        <div class="env-val" id="aqiVal">—</div>
+        <div class="env-desc" id="aqiDesc">—</div>
+      </div>
+    </div>
+    <div class="env-card" id="envWater">
+      <div class="env-icon">💧</div>
+      <div class="env-info">
+        <div class="env-label">Water Quality</div>
+        <div class="env-val" id="wqiVal">—</div>
+        <div class="env-desc" id="wqiDesc">—</div>
+      </div>
+    </div>
+    <div class="env-card" id="envDesert">
+      <div class="env-icon">🗺</div>
+      <div class="env-info">
+        <div class="env-label">Food Access</div>
+        <div class="env-val" id="desertVal">—</div>
+        <div class="env-desc" id="desertDesc">—</div>
+      </div>
+    </div>
+    <div class="env-card ai-card" id="envAi">
+      <div class="env-icon">✦</div>
+      <div class="env-info">
+        <div class="env-label">AI Summary</div>
+        <div class="env-desc ai-text" id="aiText">
+          <span class="ai-dots"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FILTER BAR ──────────────────────────────────────────── -->
+  <div class="filter-section" role="navigation" aria-label="Filter by type">
+    <div class="filter-label">FILTER BY TYPE</div>
+    <div class="filter-grid" role="group">
+      <button class="fbtn active" onclick="setFilter('all',this)" aria-pressed="true">
+        <span class="ficon"><i class="fa-solid fa-map"></i></span>
+        <span class="flabel">Show All</span>
+      </button>
+      <button class="fbtn" onclick="setFilter('PANTRY',this)" aria-pressed="false">
+        <span class="ficon"><i class="fa-solid fa-utensils"></i></span>
+        <span class="flabel">Food &amp; Pantry</span>
+      </button>
+      <button class="fbtn" onclick="setFilter('SNAP',this)" aria-pressed="false">
+        <span class="ficon"><i class="fa-solid fa-credit-card"></i></span>
+        <span class="flabel">SNAP / EBT</span>
+      </button>
+      <button class="fbtn" onclick="setFilter('SHELTER',this)" aria-pressed="false">
+        <span class="ficon"><i class="fa-solid fa-house"></i></span>
+        <span class="flabel">Shelter</span>
+      </button>
+      <button class="fbtn" onclick="setFilter('WATER',this)" aria-pressed="false">
+        <span class="ficon"><i class="fa-solid fa-droplet"></i></span>
+        <span class="flabel">Water Access</span>
+      </button>
+      <button class="fbtn" onclick="setFilter('COOLING',this)" aria-pressed="false">
+        <span class="ficon"><i class="fa-solid fa-snowflake"></i></span>
+        <span class="flabel">Cooling / Warming</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── MAIN: MAP + SIDEBAR ────────────────────────────────── -->
+  <div class="main" id="mainArea">
+
+    <!-- MAP -->
+    <div class="map-area" role="img" aria-label="Map of nearby resources">
+      <div id="map" style="width:100%;height:100%;"></div>
+
+      <div class="map-legend" role="complementary" aria-label="Map legend">
+        <div class="li"><div class="ldot" style="background:#EF9F27"></div>Food &amp; Pantry</div>
+        <div class="li"><div class="ldot" style="background:#378ADD"></div>SNAP / EBT</div>
+        <div class="li"><div class="ldot" style="background:#7F77DD"></div>Shelter</div>
+        <div class="li"><div class="ldot" style="background:#1D9E75"></div>Water Access</div>
+        <div class="li"><div class="ldot" style="background:#D85A30"></div>Cooling / Warming</div>
+        <div class="li live-li"><div class="live-dot-legend"></div>Live Feed</div>
+        <div class="li" style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);padding-top:8px;">
+          <div class="ldot" style="background:#60b8ff"></div>You are here
+        </div>
+      </div>
+
+      <div class="you-badge" aria-live="polite">
+        <div class="you-dot" aria-hidden="true"></div>
+        <span id="youLbl">Enter a ZIP code above</span>
+      </div>
+
+      <button class="toggle-btn open" id="toggleBtn"
+        onclick="toggleSidebar()"
+        aria-label="Toggle resource list"
+        aria-expanded="true">
+        <div class="arrow-r" id="toggleArrow" aria-hidden="true"></div>
+        <span class="toggle-txt">LIST</span>
+      </button>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar" role="complementary" aria-label="Resource list">
+      <div class="sb-inner">
+
+        <div class="sb-head">
+          <div class="sb-title">📋 Nearby Resources</div>
+          <div class="sb-area" id="sbArea" aria-live="polite">Enter a ZIP code to search</div>
+          <div class="sb-count" id="sbCount" aria-live="polite"></div>
+        </div>
+
+        <!-- Empty / loading state -->
+        <div class="empty-state" id="emptyState" role="status">
+          <div class="empty-icon">📍</div>
+          <div class="empty-text">Enter your ZIP code above</div>
+          <div class="empty-sub">We'll find food, water, and resources near you</div>
+        </div>
+
+        <div class="rlist" id="rlist" role="list" aria-label="Nearby resources" tabindex="0"></div>
+
+        <!-- LIVE FEED ───────────────────────────────────────── -->
+        <div class="live-section" id="liveSection" style="display:none">
+          <div class="live-header">
+            <div class="live-title">
+              <span class="live-dot-pulse"></span> Live Feed
+            </div>
+            <button class="live-post-btn" onclick="togglePostForm()">+ Post</button>
+          </div>
+
+          <div class="post-form" id="postForm" style="display:none">
+            <input type="text" id="postOrg" placeholder="Your name or org" class="pf-input" />
+            <input type="text" id="postDesc" placeholder="What's available? (e.g. 40 bagels free)" class="pf-input" />
+            <div class="pf-row">
+              <input type="text" id="postZip" placeholder="ZIP" maxlength="5" class="pf-input pf-zip" />
+              <select id="postExpiry" class="pf-select">
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="4" selected>4 hours</option>
+                <option value="8">8 hours</option>
+              </select>
+            </div>
+            <div class="pf-actions">
+              <button class="pf-submit" onclick="submitPost()">Post to Feed</button>
+              <button class="pf-cancel" onclick="togglePostForm()">Cancel</button>
+            </div>
+            <div class="pf-sms-hint">
+              No internet? Text <strong>POST [zip] [what] until [time]</strong> to your Twilio number
+            </div>
+          </div>
+
+          <div id="liveList" class="live-list"></div>
+        </div>
+
+        <!-- DETAIL PANEL ────────────────────────────────────── -->
+        <div class="detail" id="detailPanel" aria-live="polite">
+          <div class="det-name" id="detName">👆 Tap any location to see details</div>
+          <div class="det-addr" id="detAddr">Select a pin on the map or an item in the list</div>
+          <div class="det-btns" id="detBtns" style="display:none">
+            <button class="dbtn dbtn-p" id="dirBtn" aria-label="Get directions">📍 Directions</button>
+            <button class="dbtn dbtn-s" id="callBtn" aria-label="Call">📞 Call</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
+  <div class="footer">
+    <div class="fhint">👆 Enter ZIP above &nbsp;·&nbsp; Filter by type &nbsp;·&nbsp; Tap any pin for details</div>
+    <div class="need-help" role="button" tabindex="0" aria-label="Need help?">
+      <span class="nh-icon">🙋</span>
+      <div>
+        <div class="nh-text">Need Help?</div>
+        <div class="nh-sub">Text FOOD [zip] to your Twilio number</div>
+      </div>
+    </div>
+    <div class="fbrand">HARVESTPATH &nbsp;·&nbsp; ATLANTA COMMUNITY TOOL</div>
+  </div>
+
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display:none" aria-live="polite">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Finding resources near you…</div>
+  </div>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
