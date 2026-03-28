@@ -1,4 +1,5 @@
 StreetAid
+
 Real time food & resource access 
 StreetAid was made for people to find nearby food, water, and essentials resources in real time 
 
