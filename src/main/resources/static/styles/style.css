@@ -97,11 +97,12 @@ body { font-family: 'Nunito', sans-serif; background: var(--navy); }
 /* ── ENV STRIP ────────────────────────────────────────────── */
 .env-strip {
   display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 10px;
   gap: 0; border-bottom: 2px solid var(--border);
 }
 .env-card {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 14px 20px; background: var(--navy-m);
+  display: flex; align-items: flex-start; gap: 15px;
+  padding: 20px; background: var(--navy-m);
   border-right: 1px solid var(--border);
 }
 .env-card:last-child { border-right: none; }

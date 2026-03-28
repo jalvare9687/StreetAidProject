@@ -1,9 +1,4 @@
-// ─────────────────────────────────────────────────────────────
-// HarvestPath — app.js
-// Connects to Spring Boot backend at /api/lookup and /api/live
-// ─────────────────────────────────────────────────────────────
 
-// ── STATE ─────────────────────────────────────────────────────
 let map          = null;
 let markers      = [];
 let allResources = [];
@@ -187,18 +182,33 @@ function renderEnvStrip(data) {
   }
 }
 
-// ── RESOURCE LIST + MAP PINS ──────────────────────────────────
 function renderResources() {
-  const visible = allResources.filter(r =>
-    currentFilter === 'all' || r.type === currentFilter
-  );
+  const visible = allResources.filter(r => {
+    if (currentFilter === 'all') return true;
+
+    if (currentFilter === 'PANTRY')
+      return r.type === 'PANTRY'
+          || r.type === 'HOT_MEAL'
+          || r.type === 'FRIDGE'
+          || r.type === 'GARDEN'
+          || r.type === 'RESOURCE';
+
+    if (currentFilter === 'COOLING')
+      return r.type === 'COOLING'
+          || r.type === 'WARMING';
+
+    if (currentFilter === 'SNAP')    return r.type === 'SNAP';
+    if (currentFilter === 'SHELTER') return r.type === 'SHELTER';
+    if (currentFilter === 'WATER')   return r.type === 'WATER';
+
+    return false;
+  });
 
   document.getElementById('sbCount').textContent =
-    visible.length + ' location' + (visible.length !== 1 ? 's' : '') + ' shown';
+      visible.length + ' location' + (visible.length !== 1 ? 's' : '') + ' shown';
 
-  // Hide/show empty state
   document.getElementById('emptyState').style.display =
-    allResources.length === 0 ? 'block' : 'none';
+      allResources.length === 0 ? 'block' : 'none';
 
   renderList(visible);
   renderPins(visible);

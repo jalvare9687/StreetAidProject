@@ -99,7 +99,7 @@ public class ClaudeAiService {
                 .collect(Collectors.joining("\n"));
 
         return String.format("""
-            You are HarvestPath, a warm and helpful community food access assistant.
+            You are StreetAid, a warm and helpful community food access assistant.
             Someone just looked up food resources in their area. Generate two responses.
 
             LOCATION DATA:
