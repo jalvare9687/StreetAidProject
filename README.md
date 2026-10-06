@@ -1,79 +1,84 @@
-StreetAid
+# StreetAid
 
-Real time food & resource access 
-StreetAid was made for people to find nearby food, water, and essentials resources in real time 
+StreetAid is an Atlanta community-resource finder. The project is now split into a standalone Vite frontend and a Spring Boot REST backend. The frontend owns browser presentation and calls `/api`; the backend owns lookup logic, persistence, and provider integrations.
 
-Problem:
-Nearly 19 million Americans live in food deserts  areas with limited access to affordable, healthy food.
-In Atlanta, this issue is even more severe:
-1 in 4 residents live in food desert communities
-Many lack reliable transportation
-Many rely on basic phones or limited internet access
-Current solutions fall short:
-Hotlines are slow
-Apps require smartphones and data
-Information is often not real-time
-This makes the issue not just a lack of resources but a lack of accessible, real-time information.
+## Architecture
 
+```mermaid
+flowchart LR
+	person[Community member] --> frontend[Standalone Vite frontend]
+	frontend -->|HTTP JSON /api| controller[Spring REST controller]
+	twilio[Twilio] -->|SMS webhook| controller
+	subgraph backend[Spring Boot backend]
+		controller --> lookup[Lookup orchestration]
+		lookup --> providers[Geocoding, USDA, Overpass, SNAP, centers]
+		lookup --> environment[AirNow and EPA ECHO]
+		lookup --> ai[Claude summary]
+		controller --> sms[SMS command service]
+		controller --> postService[Live-post service]
+		sms --> postService
+		postService --> repository[JPA repository]
+		repository --> database[(Configured database)]
+	end
+```
 
-The Solution:
-StreetAid is a real-time resource access system designed for people in food deserts and those facing immediate need.
-It allows users to quickly find:
-Food
-Water
-Shelter
-Community services
-All in one place, with a focus on speed, accessibility, and simplicity.
+## Repository layout
 
+```text
+frontend/                         Standalone Vite client
+	index.html
+	src/api.js                      HTTP client for the backend API
+	src/main.js                     Browser interactions and rendering
+	src/style.css                   Frontend styles
+	vite.config.js                  Local API proxy to localhost:8080
+src/main/java/.../controller/     REST endpoints
+src/main/java/.../service/        Use cases and external-data services
+src/main/java/.../repository/     Database access
+src/main/java/.../model/          API response models
+src/main/resources/data/          Local CSV and transit data
+src/test/java/                    Backend tests
+```
 
-Features:
--Real time look ups:
-	-Food banks,water access, Food  pantries, communities services ,cooling and warming centers, snap and EBT services
--Water Safety insights 
-	- EPA standards integration flags drinking water sources in the area, showing any violations.
--Air quality awareness 
--Allows users to know the current air quality to make better judgment in safety when walking  
+The frontend and backend remain in this one Git repository, but can be developed, built, and deployed independently. Spring no longer serves the frontend files.
 
--Web Dashboard
-	-A visual map for volunteers, and users to better familiarize themselves with the surrounding areas and available options given. 
+## Run locally
 
-How it works:
-User enters their current zipcode
-The backend parses the request
-API’s are queried 
-OpenStreetMap (food locations)
-EPA AirNow (air quality)
-EPA ECHO (water safety)
-Claude
-Results are shown based on distance 
-AI summary is also provided giving a warm comprehensive breakdown of nearby resources 
+### Backend
 
-What Makes this Program Run
-Backend:
-Java
-Spring boot 
-Vanilla Java script 
-PostgreSQL
-Frontend:
-HTML/CSS/Java script 
-Google Maps API
-API’s & Integration:
+Configure Spring's datasource properties (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD`) plus any provider credentials you have (`GOOGLE_MAPS_API_KEY`, `AIRNOW_API_KEY`, and `ANTHROPIC_API_KEY`). The Atlanta demo ZIPs have hardcoded geocoding coordinates and several providers have fallbacks, so some lookup features can still respond without every optional provider credential. Start Spring Boot from the repository root:
 
-OpenStreetMap Overpass API
-Google Maps API
-EPA AirNow API
-EPA ECHO / SDWIS API
-Claude (AI summaries)
+```powershell
+./mvnw.cmd spring-boot:run
+```
 
-Future Implementations:
-StreetAid was built in a limited time frame, but its scalability is not limited. We made Streetaid with the idea of real-world deployment and scalability. 
-SMS integration (in progress)
--Enable full SMS functionality using Twilio
-Allow users to text commands like “FOOD 30314” or “WATER 30314”
-Ensure access for users without smartphones or internet
-This was a core feature we began implementing but were unable to fully complete within the hackathon timeframe
-Expansion To more Cities:
-We want to scale beyond Atlanta, to other communities and cities with food deserts
-Use nationwide datasets (e.g., USDA Food Access Atlas)
-Adapt to different regional resource systems
+The backend listens on port `8080` by default. The frontend-origin allowlist defaults to `http://localhost:5173`; set `FRONTEND_ORIGIN` to the deployed frontend origin when hosting the frontend separately. Do not commit API credentials.
+
+### Frontend
+
+In a second terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite address (normally `http://localhost:5173`). During development, Vite proxies `/api` requests to `http://localhost:8080`.
+
+Optional frontend configuration: copy `frontend/.env.example` to `frontend/.env.local`. `VITE_API_BASE_URL` points at a separately hosted backend; `VITE_GOOGLE_MAPS_API_KEY` enables the optional map. Any `VITE_*` value is public browser configuration, so never put server-side secrets there.
+
+Build the static frontend with `npm run build` from `frontend/`; Vite writes deployment assets to `frontend/dist/`.
+
+## API surface
+
+- `GET /api/lookup?zip=30314` — nearby resources and environmental summary.
+- `GET /api/live?zip=30314` — active community posts.
+- `POST /api/live` — create a community post.
+- `DELETE /api/live/{id}` — close a post.
+- `POST /api/sms/webhook` — Twilio SMS webhook.
+- `GET /api/health` — basic service health response.
+
+## Integrations
+
+The backend connects to Google Geocoding, OpenStreetMap Overpass, AirNow, EPA ECHO, Anthropic Claude, Twilio, and local USDA/SNAP/MARTA files. Some services use fallback data when a provider is unavailable. Treat resource and environmental information as a starting point and confirm time-sensitive details with the provider.
 
