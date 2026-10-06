@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10241e" />
+    <meta name="description" content="Find nearby food, water, and community resources." />
+    <title>StreetAid — Community resource finder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="StreetAid home">
+          <span class="brand-mark" aria-hidden="true">✳</span>
+          <span><strong>StreetAid</strong><small>ATLANTA · COMMUNITY RESOURCE FINDER</small></span>
+        </a>
+        <div class="live-status"><span class="status-dot"></span> Community-powered, updated live</div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">A little closer to what you need</p>
+            <h1>Find support<br /><span>near you.</span></h1>
+            <p class="hero-intro">Food, water, and essential community resources—gathered in one place, so your next step is easier to find.</p>
+          </div>
+          <form id="lookup-form" class="search-card">
+            <label for="zip-input">Your Atlanta ZIP code</label>
+            <div class="search-row">
+              <input id="zip-input" name="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="30314" required />
+              <button class="button button-primary" type="submit">Find resources <span aria-hidden="true">↗</span></button>
+            </div>
+            <p class="search-hint">Try 30314, 30310, 30318, or 30315</p>
+          </form>
+        </section>
+
+        <section id="results-section" class="results-section" hidden>
+          <div class="section-heading">
+            <div><p class="eyebrow">Your area</p><h2 id="area-title">Nearby resources</h2></div>
+            <button id="clear-button" class="button button-quiet" type="button">Clear search</button>
+          </div>
+
+          <div id="environment-grid" class="environment-grid" aria-live="polite"></div>
+          <section id="summary-card" class="summary-card" hidden>
+            <div class="summary-icon" aria-hidden="true">✦</div>
+            <div><p class="eyebrow">A helpful overview</p><p id="ai-summary"></p></div>
+          </section>
+
+          <div class="content-grid">
+            <section class="panel map-panel">
+              <div class="panel-heading"><div><p class="eyebrow">Explore the area</p><h2>Resource map</h2></div></div>
+              <div id="map" class="map-canvas" role="application" aria-label="Map showing nearby resources">
+                <div class="map-placeholder"><span aria-hidden="true">⌖</span><p>Map preview</p><small>Resource results are listed alongside. Add a Maps key to enable map pins.</small></div>
+              </div>
+            </section>
+
+            <section class="panel resources-panel">
+              <div class="panel-heading resource-heading"><div><p class="eyebrow">Sorted by distance</p><h2>Nearby resources</h2></div><span id="resource-count" class="count-pill">0</span></div>
+              <div class="filters" role="group" aria-label="Filter resources">
+                <button class="filter-button active" data-filter="all" type="button">All</button>
+                <button class="filter-button" data-filter="food" type="button">Food</button>
+                <button class="filter-button" data-filter="SNAP" type="button">SNAP</button>
+                <button class="filter-button" data-filter="SHELTER" type="button">Shelter</button>
+                <button class="filter-button" data-filter="WATER" type="button">Water</button>
+                <button class="filter-button" data-filter="centers" type="button">Centers</button>
+              </div>
+              <div id="resource-list" class="resource-list" aria-live="polite"></div>
+            </section>
+          </div>
+
+          <div class="content-grid lower-grid">
+            <section class="panel live-panel">
+              <div class="panel-heading"><div><p class="eyebrow">Neighbors helping neighbors</p><h2>Community feed</h2></div><button id="post-toggle" class="button button-secondary" type="button">＋ Share an update</button></div>
+              <form id="post-form" class="post-form" hidden>
+                <div class="form-fields">
+                  <label>Your name or organization<input name="orgName" maxlength="100" placeholder="Community kitchen" /></label>
+                  <label>What is available?<input name="description" maxlength="500" placeholder="Fresh groceries available today" required /></label>
+                  <label>ZIP code<input name="zipCode" inputmode="numeric" maxlength="5" placeholder="30314" required /></label>
+                  <label>Post expires<select name="expiryHours"><option value="1">In 1 hour</option><option value="2">In 2 hours</option><option value="4" selected>In 4 hours</option><option value="8">In 8 hours</option></select></label>
+                </div>
+                <button class="button button-primary" type="submit">Share with the community</button>
+              </form>
+              <div id="live-list" class="live-list"></div>
+            </section>
+            <aside class="help-card"><span class="help-icon" aria-hidden="true">♡</span><p class="eyebrow">Need help right now?</p><h2>You are not alone.</h2><p>Call 211 to connect with local food, housing, and essential services. For food by text, send <strong>FOOD [ZIP]</strong> to the StreetAid number configured by your community.</p></aside>
+          </div>
+        </section>
+
+        <section id="welcome" class="welcome-card">
+          <span class="welcome-icon" aria-hidden="true">⌖</span><div><p class="eyebrow">Start with your ZIP</p><h2>Good information can change the next step.</h2><p>Enter your ZIP code to see nearby resources, local conditions, and updates from the community.</p></div>
+        </section>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      </main>
+      <footer><span>STREETAID</span><span>Local information. Real community care.</span></footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
